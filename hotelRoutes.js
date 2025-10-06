@@ -6,6 +6,13 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+const cloudinary = require('cloudinary').v2;
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 // Create hotel listing
 router.post('/', auth, upload.array('images', 10), async (req, res) => {
   try {
@@ -23,10 +30,25 @@ router.post('/', auth, upload.array('images', 10), async (req, res) => {
         amenities = req.body.amenities.split(',').map(a => a.trim()).filter(Boolean);
       }
     }
-    // Handle images
+    // Handle images: upload to Cloudinary and save URLs
     let images = [];
     if (req.files && req.files.length > 0) {
-      images = req.files.map(file => file.originalname);
+      for (const file of req.files) {
+        // Cloudinary upload_stream returns a writable stream
+        const stream = cloudinary.uploader.upload_stream(
+          { resource_type: 'image' },
+          (error, result) => {
+            if (error) {
+              console.error('Cloudinary upload error:', error);
+            } else {
+              images.push(result.secure_url);
+            }
+          }
+        );
+        stream.end(file.buffer);
+        // Wait for upload to finish before continuing
+        await new Promise(resolve => stream.on('finish', resolve));
+      }
     }
     // Ensure userId is present
     if (!req.user || !req.user.userId) {
