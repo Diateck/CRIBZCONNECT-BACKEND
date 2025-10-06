@@ -2,11 +2,19 @@ const express = require('express');
 const router = express.Router();
 const auth = require('./authMiddleware');
 const Hotel = require('./hotel');
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 // Create hotel listing
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, upload.array('images', 10), async (req, res) => {
   try {
-    // Parse amenities from comma-separated string to array
+    // Validate required fields
+    const { name, address, price } = req.body;
+    if (!name || !address || !price) {
+      return res.status(400).json({ message: 'Missing required fields: name, address, price.' });
+    }
+    // Parse amenities
     let amenities = [];
     if (req.body.amenities) {
       if (Array.isArray(req.body.amenities)) {
@@ -15,15 +23,28 @@ router.post('/', auth, async (req, res) => {
         amenities = req.body.amenities.split(',').map(a => a.trim()).filter(Boolean);
       }
     }
+    // Handle images
+    let images = [];
+    if (req.files && req.files.length > 0) {
+      images = req.files.map(file => file.originalname);
+    }
     // Ensure userId is present
     if (!req.user || !req.user.userId) {
       return res.status(401).json({ message: 'Unauthorized: userId missing from token.' });
     }
+    // Build hotel object
     const hotel = new Hotel({
-      ...req.body,
+      name,
+      address,
+      price,
+      description: req.body.description || '',
+      rooms: req.body.rooms || 1,
       amenities,
+      images,
       userId: req.user.userId
     });
+    
+    module.exports = router;
     await hotel.save();
     res.status(201).json(hotel);
   } catch (err) {
@@ -60,7 +81,6 @@ router.put('/:id', auth, async (req, res) => {
       { ...req.body, updatedAt: Date.now() },
       { new: true }
     );
-    if (!hotel) return res.status(404).json({ message: 'Hotel not found' });
     res.json(hotel);
   } catch (err) {
     res.status(500).json({ message: 'Error updating hotel', error: err.message });
@@ -68,6 +88,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // Delete hotel listing
+
 router.delete('/:id', auth, async (req, res) => {
   try {
     const hotel = await Hotel.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
