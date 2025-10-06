@@ -25,7 +25,9 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // ✅ CREATE a new listing (with images)
-router.post("/", authMiddleware, upload.array("images", 10), async (req, res) => {
+// For listing creation we accept multipart/form-data. Run multer first so
+// the form fields (including token) are available to authMiddleware.
+router.post("/", upload.array("images", 10), authMiddleware, async (req, res) => {
   try {
     console.log("Received POST /api/listings");
     console.log("Request headers:", req.headers); // Log headers for debugging
