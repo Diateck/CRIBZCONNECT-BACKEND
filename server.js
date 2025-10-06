@@ -20,6 +20,10 @@ app.use("/api/listings", listingRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/user", profileRoutes);
 
+// Hotel routes
+const hotelRoutes = require("./hotelRoutes");
+app.use("/api/hotels", hotelRoutes);
+
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, {
