@@ -20,34 +20,46 @@ const upload = multer({ storage });
 // ✅ CREATE a new listing (with images)
 router.post("/", upload.array("images", 10), async (req, res) => {
   try {
+    console.log("Received POST /api/listings");
+    console.log("Request body:", req.body);
+    console.log("Request files:", req.files);
     const imageFiles = req.files;
     let imageUrls = [];
 
     // Upload each image to Cloudinary
     for (const file of imageFiles) {
-      const uploadResult = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "real_estate_listings" },
-          (error, result) => {
-            if (result) resolve(result);
-            else reject(error);
-          }
-        );
-        streamifier.createReadStream(file.buffer).pipe(stream);
-      });
-      imageUrls.push(uploadResult.secure_url);
+      try {
+        const uploadResult = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "real_estate_listings" },
+            (error, result) => {
+              if (result) resolve(result);
+              else reject(error);
+            }
+          );
+          streamifier.createReadStream(file.buffer).pipe(stream);
+        });
+        imageUrls.push(uploadResult.secure_url);
+      } catch (imgErr) {
+        console.error("Cloudinary upload error:", imgErr);
+        throw imgErr;
+      }
     }
 
     // Save the listing in MongoDB
-    const newListing = new Listing({
-      ...req.body,
-      images: imageUrls,
-    });
-
-    const savedListing = await newListing.save();
-    res.status(201).json(savedListing);
+    try {
+      const newListing = new Listing({
+        ...req.body,
+        images: imageUrls,
+      });
+      const savedListing = await newListing.save();
+      res.status(201).json(savedListing);
+    } catch (dbErr) {
+      console.error("MongoDB save error:", dbErr);
+      throw dbErr;
+    }
   } catch (error) {
-    console.error(error);
+    console.error("Error in /api/listings:", error);
     res.status(500).json({ message: error.message });
   }
 });
