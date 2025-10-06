@@ -15,8 +15,10 @@ app.use(express.json());
 // Routes
 const listingRoutes = require("./listingRoutes");
 const authRoutes = require("./authRoutes");
+const profileRoutes = require("./profileRoutes");
 app.use("/api/listings", listingRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/user", profileRoutes);
 
 // MongoDB Connection
 mongoose
