@@ -6,7 +6,24 @@ const Hotel = require('./hotel');
 // Create hotel listing
 router.post('/', auth, async (req, res) => {
   try {
-    const hotel = new Hotel({ ...req.body, userId: req.user.userId });
+    // Parse amenities from comma-separated string to array
+    let amenities = [];
+    if (req.body.amenities) {
+      if (Array.isArray(req.body.amenities)) {
+        amenities = req.body.amenities;
+      } else {
+        amenities = req.body.amenities.split(',').map(a => a.trim()).filter(Boolean);
+      }
+    }
+    // Ensure userId is present
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({ message: 'Unauthorized: userId missing from token.' });
+    }
+    const hotel = new Hotel({
+      ...req.body,
+      amenities,
+      userId: req.user.userId
+    });
     await hotel.save();
     res.status(201).json(hotel);
   } catch (err) {
