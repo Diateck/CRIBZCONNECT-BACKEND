@@ -60,11 +60,21 @@ router.post("/", authMiddleware, upload.array("images", 10), async (req, res) =>
         images: imageUrls,
         userId: mongoose.Types.ObjectId(req.user.userId), // Ensure ObjectId type
       });
-      const savedListing = await newListing.save();
-      res.status(201).json(savedListing);
-    } catch (dbErr) {
-      console.error("MongoDB save error:", dbErr);
-      throw dbErr;
+      try {
+        const savedListing = await newListing.save();
+        res.status(201).json(savedListing);
+      } catch (dbErr) {
+        if (dbErr.name === 'ValidationError') {
+          console.error('Validation error:', dbErr.errors);
+          res.status(400).json({ message: 'Validation error', errors: dbErr.errors });
+        } else {
+          console.error("MongoDB save error:", dbErr);
+          res.status(500).json({ message: dbErr.message });
+        }
+      }
+    } catch (err) {
+      console.error("Error in /api/listings (outer):", err);
+      res.status(500).json({ message: err.message });
     }
   } catch (error) {
     console.error("Error in /api/listings:", error);
