@@ -1,6 +1,7 @@
 // routes/listingRoutes.js
 const express = require("express");
 const router = express.Router();
+const authMiddleware = require("./authMiddleware");
 const Listing = require("./listing");
 const multer = require("multer");
 const { v2: cloudinary } = require("cloudinary");
@@ -23,7 +24,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // ✅ CREATE a new listing (with images)
-router.post("/", upload.array("images", 10), async (req, res) => {
+router.post("/", authMiddleware, upload.array("images", 10), async (req, res) => {
   try {
     console.log("Received POST /api/listings");
     console.log("Request body:", req.body);
@@ -56,6 +57,7 @@ router.post("/", upload.array("images", 10), async (req, res) => {
       const newListing = new Listing({
         ...req.body,
         images: imageUrls,
+        userId: req.user.userId,
       });
       const savedListing = await newListing.save();
       res.status(201).json(savedListing);
@@ -70,11 +72,26 @@ router.post("/", upload.array("images", 10), async (req, res) => {
 });
 
 // ✅ GET all listings
+// Get all listings or filter by userId
 router.get("/", async (req, res) => {
   try {
-    const listings = await Listing.find();
+    const { userId } = req.query;
+    const filter = userId ? { userId } : {};
+    const listings = await Listing.find(filter);
     res.json(listings);
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+// Get listings for authenticated user
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    console.log('Authenticated user:', req.user); // Log the user object
+    const listings = await Listing.find({ userId: req.user.userId });
+    console.log('Listings found for user:', listings); // Log the listings found
+    res.json(listings);
+  } catch (error) {
+    console.error("Error in /api/listings/me:", error);
     res.status(500).json({ message: error.message });
   }
 });

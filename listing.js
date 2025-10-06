@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const listingSchema = new mongoose.Schema(
   {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     title: { type: String, required: true },
     description: { type: String, required: true },
     propertyType: { type: String, required: true },
