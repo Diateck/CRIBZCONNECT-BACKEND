@@ -6,6 +6,7 @@ const Listing = require("./listing");
 const multer = require("multer");
 const { v2: cloudinary } = require("cloudinary");
 const streamifier = require("streamifier");
+const mongoose = require("mongoose");
 
 // Configure Cloudinary
 cloudinary.config({
@@ -57,7 +58,7 @@ router.post("/", authMiddleware, upload.array("images", 10), async (req, res) =>
       const newListing = new Listing({
         ...req.body,
         images: imageUrls,
-        userId: req.user.userId,
+        userId: mongoose.Types.ObjectId(req.user.userId), // Ensure ObjectId type
       });
       const savedListing = await newListing.save();
       res.status(201).json(savedListing);
