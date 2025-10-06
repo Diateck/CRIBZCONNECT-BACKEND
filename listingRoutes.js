@@ -59,7 +59,7 @@ router.post("/", authMiddleware, upload.array("images", 10), async (req, res) =>
       const newListing = new Listing({
         ...req.body,
         images: imageUrls,
-        userId: mongoose.Types.ObjectId(req.user.userId), // Ensure ObjectId type
+        userId: new mongoose.Types.ObjectId(req.user.userId), // Ensure ObjectId type
       });
       try {
         const savedListing = await newListing.save();
