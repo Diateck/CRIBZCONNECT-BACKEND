@@ -33,22 +33,24 @@ router.post('/', auth, upload.array('images', 10), async (req, res) => {
     // Handle images: upload to Cloudinary and save URLs
     let images = [];
     if (req.files && req.files.length > 0) {
-      for (const file of req.files) {
-        // Cloudinary upload_stream returns a writable stream
-        const stream = cloudinary.uploader.upload_stream(
-          { resource_type: 'image' },
-          (error, result) => {
-            if (error) {
-              console.error('Cloudinary upload error:', error);
-            } else {
-              images.push(result.secure_url);
+      // Use Promise.all to wait for all uploads
+      const uploadPromises = req.files.map(file => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { resource_type: 'image' },
+            (error, result) => {
+              if (error) {
+                console.error('Cloudinary upload error:', error);
+                resolve(null);
+              } else {
+                resolve(result.secure_url);
+              }
             }
-          }
-        );
-        stream.end(file.buffer);
-        // Wait for upload to finish before continuing
-        await new Promise(resolve => stream.on('finish', resolve));
-      }
+          );
+          stream.end(file.buffer);
+        });
+      });
+      images = (await Promise.all(uploadPromises)).filter(Boolean);
     }
     // Ensure userId is present
     if (!req.user || !req.user.userId) {
