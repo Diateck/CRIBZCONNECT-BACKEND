@@ -13,8 +13,10 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-const listingRoutes = require("./listingRoutes"); // matches exact casing
+const listingRoutes = require("./listingRoutes");
+const authRoutes = require("./authRoutes");
 app.use("/api/listings", listingRoutes);
+app.use("/api/auth", authRoutes);
 
 // MongoDB Connection
 mongoose
