@@ -27,6 +27,7 @@ router.post('/', auth, async (req, res) => {
     await hotel.save();
     res.status(201).json(hotel);
   } catch (err) {
+    console.error('Hotel creation error:', err);
     res.status(500).json({ message: 'Error creating hotel', error: err.message });
   }
 });
