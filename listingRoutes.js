@@ -28,6 +28,7 @@ const upload = multer({ storage });
 router.post("/", authMiddleware, upload.array("images", 10), async (req, res) => {
   try {
     console.log("Received POST /api/listings");
+    console.log("Request headers:", req.headers); // Log headers for debugging
     console.log("Request body:", req.body);
     console.log("Request files:", req.files);
     const imageFiles = req.files;
