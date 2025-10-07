@@ -30,6 +30,10 @@ app.use("/api/users", usersRoutes);
 const hotelRoutes = require("./hotelRoutes");
 app.use("/api/hotels", hotelRoutes);
 
+// Admin routes
+const adminRoutes = require("./adminRoutes");
+app.use("/api/admin", adminRoutes);
+
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, {
