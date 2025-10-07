@@ -1,3 +1,8 @@
+
+const express = require('express');
+const router = express.Router();
+const User = require('./user');
+
 // POST: Credit agent balance
 router.post('/credit', async (req, res) => {
   try {
@@ -16,9 +21,6 @@ router.post('/credit', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-const express = require('express');
-const router = express.Router();
-const User = require('./user');
 
 // GET all users (for admin dashboard)
 router.get('/', async (req, res) => {
