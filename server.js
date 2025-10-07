@@ -38,6 +38,13 @@ mongoose
   })
   .then(() => {
     console.log("✅ MongoDB connected");
+    // ensure default admin exists
+    try {
+      const ensureAdmin = require('./ensureAdmin');
+      ensureAdmin();
+    } catch (err) {
+      console.error('Could not run ensureAdmin:', err);
+    }
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   })
   .catch((error) => console.error("MongoDB connection error:", error));
