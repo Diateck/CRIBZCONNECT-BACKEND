@@ -18,11 +18,13 @@ const authRoutes = require("./authRoutes");
 const profileRoutes = require("./profileRoutes");
 const favoriteRoutes = require("./favoriteRoutes");
 const reservationRoutes = require("./reservationRoutes");
+const usersRoutes = require("./usersRoutes");
 app.use("/api/listings", listingRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/user", profileRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/users", usersRoutes);
 
 // Hotel routes
 const hotelRoutes = require("./hotelRoutes");
