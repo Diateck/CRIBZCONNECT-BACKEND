@@ -71,8 +71,9 @@ router.post('/', auth, upload.array('images', 10), async (req, res) => {
     await hotel.save();
     res.status(201).json(hotel);
 // PATCH endpoint to approve hotel (admin only)
-router.patch('/:id/approve', async (req, res) => {
+router.patch('/:id/approve', auth, async (req, res) => {
   try {
+    if (!req.user || req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden: admin only' });
     const hotel = await Hotel.findByIdAndUpdate(
       req.params.id,
       { status: 'published', updatedAt: Date.now() },

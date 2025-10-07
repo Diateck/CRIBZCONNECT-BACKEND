@@ -81,8 +81,9 @@ router.post("/", upload.array("images", 10), authMiddleware, async (req, res) =>
       res.status(500).json({ message: err.message });
     }
 // PATCH endpoint to approve listing (admin only)
-router.patch('/:id/approve', async (req, res) => {
+router.patch('/:id/approve', authMiddleware, async (req, res) => {
   try {
+    if (!req.user || req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden: admin only' });
     const listing = await Listing.findByIdAndUpdate(
       req.params.id,
       { status: 'published' },
