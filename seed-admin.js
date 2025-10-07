@@ -8,12 +8,14 @@ const MONGO_URI = process.env.MONGO_URI;
 
 async function createOrUpdateAdmin() {
   await mongoose.connect(MONGO_URI);
-  const password = 'Admin@123';
+  const username = 'Cribzconnect';
+  const password = 'Admin123';
   const hashed = await bcrypt.hash(password, 10);
   let admin = await User.findOne({ role: 'admin' });
   if (!admin) {
     admin = new User({
       fullName: 'Super Admin',
+      username,
       email: 'admin@cribzconnect.com',
       password: hashed,
       role: 'admin',
@@ -22,6 +24,7 @@ async function createOrUpdateAdmin() {
     await admin.save();
     console.log('Default admin created.');
   } else {
+    admin.username = username;
     admin.password = hashed;
     admin.passwordChanged = false;
     await admin.save();
