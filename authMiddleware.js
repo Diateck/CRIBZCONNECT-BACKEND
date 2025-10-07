@@ -17,9 +17,10 @@ function authMiddleware(req, res, next) {
     return res.status(401).json({ message: 'No token provided.' });
   }
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // { userId, fullName, username }
-    next();
+  const decoded = jwt.verify(token, JWT_SECRET);
+  console.log('authMiddleware: decoded token:', decoded);
+  req.user = decoded; // { userId, fullName, username, role }
+  next();
   } catch (err) {
     console.log('authMiddleware: JWT verification error:', err.message);
     return res.status(401).json({ message: 'Invalid token.' });
