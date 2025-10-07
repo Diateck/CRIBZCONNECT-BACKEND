@@ -16,9 +16,13 @@ app.use(express.json());
 const listingRoutes = require("./listingRoutes");
 const authRoutes = require("./authRoutes");
 const profileRoutes = require("./profileRoutes");
+const favoriteRoutes = require("./favoriteRoutes");
+const reservationRoutes = require("./reservationRoutes");
 app.use("/api/listings", listingRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/user", profileRoutes);
+app.use("/api/favorites", favoriteRoutes);
+app.use("/api/reservations", reservationRoutes);
 
 // Hotel routes
 const hotelRoutes = require("./hotelRoutes");
