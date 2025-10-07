@@ -24,15 +24,20 @@ router.get('/stats', async (req, res) => {
     // Total revenue: sum of all published listing and hotel prices
     const totalRevenue = [...listings, ...hotels].reduce((sum, p) => sum + (p.price || 0), 0);
 
+    // Total balance: sum of all user balances
+    const totalBalance = users.reduce((sum, u) => sum + (u.balance || 0), 0);
+
     // Currency conversion: XAF to USD ($) (example rate: 1 USD = 600 XAF)
     const USD_RATE = 600;
     const totalRevenueUSD = totalRevenue ? (totalRevenue / USD_RATE) : 0;
+    const totalBalanceUSD = totalBalance ? (totalBalance / USD_RATE) : 0;
 
     res.json({
       totalProperties,
       totalUsers,
       verifiedAgents,
       totalRevenue: totalRevenueUSD,
+      totalBalance: totalBalanceUSD,
       currency: '$',
       totalPropertiesChange: '+0%',
       totalUsersChange: '+0%',
