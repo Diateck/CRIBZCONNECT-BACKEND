@@ -66,7 +66,7 @@ router.post('/', auth, upload.array('images', 10), async (req, res) => {
       amenities,
       images,
       userId: req.user.userId,
-      status: 'pending'
+      status: 'published'
     });
     await hotel.save();
     res.status(201).json(hotel);

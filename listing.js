@@ -18,7 +18,7 @@ const listingSchema = new mongoose.Schema(
     address: { type: String, required: true },
     images: [{ type: String }], // Cloudinary URLs
     affiliateLink: { type: String },
-    status: { type: String, enum: ['pending', 'published', 'draft'], default: 'pending' },
+  status: { type: String, enum: ['pending', 'published', 'draft'], default: 'published' },
   },
   { timestamps: true }
 );
