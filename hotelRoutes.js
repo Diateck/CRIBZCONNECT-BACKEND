@@ -138,7 +138,12 @@ router.put('/:id', auth, async (req, res) => {
 
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const hotel = await Hotel.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
+    let hotel;
+    if (req.user.role === 'admin') {
+      hotel = await Hotel.findByIdAndDelete(req.params.id);
+    } else {
+      hotel = await Hotel.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
+    }
     if (!hotel) return res.status(404).json({ message: 'Hotel not found' });
     res.json({ message: 'Hotel deleted' });
   } catch (err) {
