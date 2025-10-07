@@ -62,7 +62,7 @@ router.post("/", upload.array("images", 10), authMiddleware, async (req, res) =>
         ...req.body,
         images: imageUrls,
         userId: new mongoose.Types.ObjectId(req.user.userId), // Ensure ObjectId type
-        status: 'published'
+        status: 'pending'
       });
       try {
         const savedListing = await newListing.save();
