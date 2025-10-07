@@ -9,6 +9,7 @@ const hotelSchema = new mongoose.Schema({
   amenities: { type: [String], default: [] },
   price: { type: Number, required: true },
   images: { type: [String], default: [] },
+  status: { type: String, enum: ['pending', 'published', 'draft'], default: 'pending' },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

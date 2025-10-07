@@ -62,6 +62,7 @@ router.post("/", upload.array("images", 10), authMiddleware, async (req, res) =>
         ...req.body,
         images: imageUrls,
         userId: new mongoose.Types.ObjectId(req.user.userId), // Ensure ObjectId type
+        status: 'pending'
       });
       try {
         const savedListing = await newListing.save();
@@ -79,6 +80,30 @@ router.post("/", upload.array("images", 10), authMiddleware, async (req, res) =>
       console.error("Error in /api/listings (outer):", err);
       res.status(500).json({ message: err.message });
     }
+// PATCH endpoint to approve listing (admin only)
+router.patch('/:id/approve', async (req, res) => {
+  try {
+    const listing = await Listing.findByIdAndUpdate(
+      req.params.id,
+      { status: 'published' },
+      { new: true }
+    );
+    if (!listing) return res.status(404).json({ message: 'Listing not found' });
+    res.json(listing);
+  } catch (err) {
+    res.status(500).json({ message: 'Error approving listing', error: err.message });
+  }
+});
+// GET listings by status (for admin sorting/filtering)
+router.get('/status/:status', async (req, res) => {
+  try {
+    const status = req.params.status;
+    const listings = await Listing.find({ status });
+    res.json(listings);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching listings by status', error: err.message });
+  }
+});
   } catch (error) {
     console.error("Error in /api/listings:", error);
     res.status(500).json({ message: error.message });

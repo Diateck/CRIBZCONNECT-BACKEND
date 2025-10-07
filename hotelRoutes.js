@@ -65,12 +65,35 @@ router.post('/', auth, upload.array('images', 10), async (req, res) => {
       rooms: req.body.rooms || 1,
       amenities,
       images,
-      userId: req.user.userId
+      userId: req.user.userId,
+      status: 'pending'
     });
-    
-    module.exports = router;
     await hotel.save();
     res.status(201).json(hotel);
+// PATCH endpoint to approve hotel (admin only)
+router.patch('/:id/approve', async (req, res) => {
+  try {
+    const hotel = await Hotel.findByIdAndUpdate(
+      req.params.id,
+      { status: 'published', updatedAt: Date.now() },
+      { new: true }
+    );
+    if (!hotel) return res.status(404).json({ message: 'Hotel not found' });
+    res.json(hotel);
+  } catch (err) {
+    res.status(500).json({ message: 'Error approving hotel', error: err.message });
+  }
+});
+// GET hotels by status (for admin sorting/filtering)
+router.get('/status/:status', async (req, res) => {
+  try {
+    const status = req.params.status;
+    const hotels = await Hotel.find({ status }).sort({ createdAt: -1 });
+    res.json(hotels);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching hotels by status', error: err.message });
+  }
+});
   } catch (err) {
     console.error('Hotel creation error:', err);
     res.status(500).json({ message: 'Error creating hotel', error: err.message });
