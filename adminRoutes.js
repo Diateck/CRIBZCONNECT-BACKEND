@@ -1,10 +1,14 @@
+const express = require('express');
+const router = express.Router();
+const User = require('./user');
+const Transaction = require('./transaction'); // If you have a transaction model
+
 // GET: Withdrawal requests (type: payout)
 router.get('/withdrawals', async (req, res) => {
   try {
     // Find all payout transactions
     const withdrawals = await Transaction.find({ type: 'payout' }).sort({ createdAt: -1 });
     // Populate agent info for each withdrawal
-    const User = require('./user');
     const results = await Promise.all(withdrawals.map(async (w) => {
       let agentName = '';
       try {
@@ -26,10 +30,6 @@ router.get('/withdrawals', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-const express = require('express');
-const router = express.Router();
-const User = require('./user');
-const Transaction = require('./transaction'); // If you have a transaction model
 
 // GET: Admin dashboard stats
 router.get('/stats', async (req, res) => {
