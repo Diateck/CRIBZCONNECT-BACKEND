@@ -1,7 +1,32 @@
+
 const express = require('express');
 const router = express.Router();
 const auth = require('./authMiddleware');
 const User = require('./user');
+const Transaction = require('./transaction');
+
+// POST request payout
+router.post('/request-payout', auth, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { payoutAmount, payoutDetails } = req.body;
+    if (!payoutAmount || payoutAmount < 50000) {
+      return res.status(400).json({ message: 'Minimum payout amount is 50,000 FCFA' });
+    }
+    // Save payout request as a transaction
+    const transaction = new Transaction({
+      agentId: userId,
+      type: 'payout',
+      amount: payoutAmount,
+      description: JSON.stringify(payoutDetails),
+      status: 'pending'
+    });
+    await transaction.save();
+    res.json({ message: 'Payout request submitted successfully', transaction });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // GET user profile
 router.get('/profile', auth, async (req, res) => {
