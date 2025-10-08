@@ -13,6 +13,17 @@ router.post('/request-payout', auth, async (req, res) => {
     if (!payoutAmount || payoutAmount < 50000) {
       return res.status(400).json({ message: 'Minimum payout amount is 50,000 FCFA' });
     }
+    // Find user and check balance
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    if ((user.balance || 0) < payoutAmount) {
+      return res.status(400).json({ message: 'Insufficient balance for withdrawal' });
+    }
+    // Deduct payout amount from balance
+    user.balance = (user.balance || 0) - payoutAmount;
+    await user.save();
     // Save payout request as a transaction
     const transaction = new Transaction({
       agentId: userId,
@@ -22,7 +33,7 @@ router.post('/request-payout', auth, async (req, res) => {
       status: 'pending'
     });
     await transaction.save();
-    res.json({ message: 'Payout request submitted successfully', transaction });
+    res.json({ message: 'Payout request submitted successfully', transaction, newBalance: user.balance });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
