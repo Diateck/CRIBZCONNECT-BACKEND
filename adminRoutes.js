@@ -1,3 +1,31 @@
+// GET: Withdrawal requests (type: payout)
+router.get('/withdrawals', async (req, res) => {
+  try {
+    // Find all payout transactions
+    const withdrawals = await Transaction.find({ type: 'payout' }).sort({ createdAt: -1 });
+    // Populate agent info for each withdrawal
+    const User = require('./user');
+    const results = await Promise.all(withdrawals.map(async (w) => {
+      let agentName = '';
+      try {
+        const agent = await User.findById(w.agentId);
+        agentName = agent ? (agent.fullName || agent.username || agent.email) : '';
+      } catch {}
+      return {
+        _id: w._id,
+        agentId: w.agentId,
+        agentName,
+        amount: w.amount,
+        description: w.description,
+        status: w.status,
+        createdAt: w.createdAt
+      };
+    }));
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 const express = require('express');
 const router = express.Router();
 const User = require('./user');
